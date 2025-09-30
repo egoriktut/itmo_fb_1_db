@@ -30,8 +30,7 @@ select length(brand_origin) from raw_data.sales ORDER BY length(person_name) DES
 -- Создание таблиц
 CREATE table car_shop.countries (
     id SERIAL PRIMARY KEY,
-    -- Из проанализированных данных название состоит из eng букв и максимум 11 символов длина, берем с запасом
-    name VARCHAR(15) CHECK ( name ~ '^[A-Za-z\s]+$') not null UNIQUE
+    name TEXT
 );
 
 CREATE table car_shop.colors (
@@ -107,9 +106,7 @@ INSERT INTO
 SELECT DISTINCT
     brand_origin
 FROM
-    raw_data.sales
-WHERE
-    brand_origin IS NOT NULL;
+    raw_data.sales;
 
 
 INSERT INTO
@@ -119,7 +116,7 @@ SELECT DISTINCT
 FROM
     raw_data.sales
 WHERE
-    person_name IS NOT NULL AND phone IS NOT NULL ;
+    person_name IS NOT NULL AND phone IS NOT NULL;
 
 
 INSERT INTO
@@ -130,6 +127,8 @@ FROM
     raw_data.sales
 WHERE auto IS NOT NULL;
 
+-- Сначала не понимал в чем замечание, у меня криво импортнулся столбец по brand_origin....
+-- UPDATE raw_data.sales sale SET brand_origin = NULL WHERE sale.brand_origin = 'null';
 
 INSERT INTO
     car_shop.brands (name, origin_id)
@@ -138,9 +137,8 @@ SELECT DISTINCT
     country.id
 FROM
     raw_data.sales c
-JOIN
-    car_shop.countries country ON name =c.brand_origin
-WHERE c.brand_origin IS NOT NULL AND c.auto IS NOT NULL;
+LEFT JOIN
+    car_shop.countries country ON name =c.brand_origin;
 
 
 INSERT INTO
@@ -156,8 +154,7 @@ SELECT DISTINCT
 FROM
     raw_data.sales c
 JOIN
-    car_shop.brands brand ON brand.name = SUBSTRING(auto FROM 0 FOR POSITION(' ' IN auto))
-WHERE c.brand_origin IS NOT NULL AND c.auto IS NOT NULL;
+    car_shop.brands brand ON brand.name = SUBSTRING(auto FROM 0 FOR POSITION(' ' IN auto));
 
 
 INSERT INTO
